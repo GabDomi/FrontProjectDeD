@@ -10,4 +10,11 @@ class MeioOrc : Raca {
         personagem.constituicao += 1
         personagem.forca += 2
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf(
+            "Constituição" to 1,
+            "Força" to 2
+        )
+    }
 }

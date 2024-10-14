@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-//@RewriteQueriesToDropUnusedColumns
 interface PersonagemDao {
     @Query("SELECT * FROM personagem")
     fun getAll(): List<PersonagemEntity>

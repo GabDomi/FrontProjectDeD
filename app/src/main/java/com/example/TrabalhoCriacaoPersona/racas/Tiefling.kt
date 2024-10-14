@@ -10,4 +10,11 @@ class Tiefling : Raca {
         personagem.inteligencia += 1
         personagem.carisma += 2
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf(
+            "Inteligência" to 1,
+            "Carisma" to 2
+        )
+    }
 }

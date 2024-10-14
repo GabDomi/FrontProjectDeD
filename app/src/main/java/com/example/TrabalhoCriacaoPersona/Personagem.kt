@@ -3,6 +3,7 @@ package com.dnd.model
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlin.math.floor
 
 data class Personagem(
     var id: Long = 0L,
@@ -26,7 +27,7 @@ data class Personagem(
     }
 
     // Função para calcular o modificador de um atributo
-    private fun modificador(valor: Int): Int = (valor - 10) / 2
+    private fun modificador(valor: Int):  Int = floor((valor - 10) / 2.0).toInt()
 
     // Funções para calcular os modificadores de cada atributo
     fun modificadorForca() = modificador(forca)

@@ -25,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.floor
 
 class MainActivity : ComponentActivity() {
     private lateinit var personagemService: PersonagemService
@@ -108,6 +109,16 @@ class MainActivity : ComponentActivity() {
                 racaSelecionada = RacaUtil.obterRacaPorNome(newRaca)
             }
 
+            // Exibir os bônus raciais após a seleção da raça
+            racaSelecionada?.let { raca ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Bônus Raciais:", style = MaterialTheme.typography.headlineSmall)
+                val bonusRaciais = raca.obterBonusRacial()
+                bonusRaciais.forEach { (atributo, bonus) ->
+                    Text(text = "$atributo: +$bonus")
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = {
@@ -139,6 +150,8 @@ class MainActivity : ComponentActivity() {
         personagem: Personagem,
         personagemService: PersonagemService
     ) {
+        fun calculoModificador(valor: Int):  Int = floor((valor - 10) / 2.0).toInt()
+
         var forca by remember { mutableStateOf(personagem.forca) }
         var destreza by remember { mutableStateOf(personagem.destreza) }
         var constituicao by remember { mutableStateOf(personagem.constituicao) }
@@ -163,12 +176,12 @@ class MainActivity : ComponentActivity() {
             Text(text = "Pontos restantes: $pontosRestantes")
 
 
-            AtributoAdjustableField("Força", forca, { forca = it }, personagem.modificadorForca())
-            AtributoAdjustableField("Destreza", destreza, { destreza = it }, personagem.modificadorDestreza())
-            AtributoAdjustableField("Constituição", constituicao, { constituicao = it }, personagem.modificadorConstituicao())
-            AtributoAdjustableField("Inteligência", inteligencia, { inteligencia = it }, personagem.modificadorInteligencia())
-            AtributoAdjustableField("Sabedoria", sabedoria, { sabedoria = it }, personagem.modificadorSabedoria())
-            AtributoAdjustableField("Carisma", carisma, { carisma = it }, personagem.modificadorCarisma())
+            AtributoAdjustableField("Força", forca, { forca = it }, calculoModificador(forca))
+            AtributoAdjustableField("Destreza", destreza, { destreza = it }, calculoModificador(destreza))
+            AtributoAdjustableField("Constituição", constituicao, { constituicao = it }, calculoModificador(constituicao))
+            AtributoAdjustableField("Inteligência", inteligencia, { inteligencia = it }, calculoModificador(inteligencia))
+            AtributoAdjustableField("Sabedoria", sabedoria, { sabedoria = it }, calculoModificador(sabedoria))
+            AtributoAdjustableField("Carisma", carisma, { carisma = it }, calculoModificador(carisma))
 
             Button(
                 onClick = {
@@ -269,7 +282,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun adjustedValue(baseValue: Int, modificador: Int): String {
+    /*fun adjustedValue(baseValue: Int, modificador: Int): String {
         return (baseValue + modificador).toString()
+    }*/
+
+    fun adjustedValue(baseValue: Int, modificador: Int): Int {
+        return baseValue + modificador
     }
+
 }

@@ -10,4 +10,11 @@ class Anao : Raca {
         personagem.constituicao += 2
         personagem.sabedoria += 1
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf(
+            "Constituição" to 2,
+            "Sabedoria" to 1
+        )
+    }
 }

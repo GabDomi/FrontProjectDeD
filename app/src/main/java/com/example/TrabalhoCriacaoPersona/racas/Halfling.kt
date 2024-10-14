@@ -9,4 +9,8 @@ class Halfling : Raca {
     override fun aplicarBonusRacial(personagem: Personagem) {
         personagem.destreza += 1
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf("Destreza" to 1)
+    }
 }

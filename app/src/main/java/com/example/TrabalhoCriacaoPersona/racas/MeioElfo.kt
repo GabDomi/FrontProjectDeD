@@ -9,4 +9,8 @@ class MeioElfo : Raca {
     override fun aplicarBonusRacial(personagem: Personagem) {
         personagem.carisma += 2
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf("Carisma" to 2)
+    }
 }

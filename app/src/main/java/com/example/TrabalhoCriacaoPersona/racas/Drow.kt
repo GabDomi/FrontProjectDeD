@@ -9,4 +9,8 @@ class Drow : Raca {
     override fun aplicarBonusRacial(personagem: Personagem) {
         personagem.carisma += 1
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf("Carisma" to 1)
+    }
 }

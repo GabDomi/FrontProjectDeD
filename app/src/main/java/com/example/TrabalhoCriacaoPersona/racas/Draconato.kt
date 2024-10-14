@@ -10,4 +10,11 @@ class Draconato : Raca {
         personagem.forca += 2
         personagem.carisma += 1
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf(
+            "Força" to 2,
+            "Carisma" to 1
+        )
+    }
 }

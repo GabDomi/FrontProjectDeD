@@ -9,4 +9,8 @@ class ElfoDaFloresta : Raca {
     override fun aplicarBonusRacial(personagem: Personagem) {
         personagem.sabedoria += 1
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf("Sabedoria" to 1)
+    }
 }

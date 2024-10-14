@@ -9,4 +9,8 @@ class Gnomo : Raca {
     override fun aplicarBonusRacial(personagem: Personagem) {
         personagem.inteligencia += 2
     }
+
+    override fun obterBonusRacial(): Map<String, Int> {
+        return mapOf("Inteligência" to 2)
+    }
 }
