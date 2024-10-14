@@ -162,7 +162,7 @@ class MainActivity : ComponentActivity() {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(text = "Pontos restantes: $pontosRestantes")
 
-            // Exibir o valor base e o modificador ao lado na tela de escolha
+
             AtributoAdjustableField("Força", forca, { forca = it }, personagem.modificadorForca())
             AtributoAdjustableField("Destreza", destreza, { destreza = it }, personagem.modificadorDestreza())
             AtributoAdjustableField("Constituição", constituicao, { constituicao = it }, personagem.modificadorConstituicao())
