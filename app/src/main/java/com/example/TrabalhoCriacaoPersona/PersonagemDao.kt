@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface PersonagemDao {
@@ -14,8 +15,11 @@ interface PersonagemDao {
     suspend fun getPersonagemById(id: Long): PersonagemEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(personagem: PersonagemEntity)
+    suspend fun insert(personagem: PersonagemEntity)
+
+    @Update
+    suspend fun update(personagem: PersonagemEntity)
 
     @Query("DELETE FROM personagem WHERE id = :id")
-    fun deleteById(id: Long)
+    suspend fun deleteById(id: Long)
 }

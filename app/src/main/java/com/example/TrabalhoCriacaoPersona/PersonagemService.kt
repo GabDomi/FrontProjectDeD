@@ -10,9 +10,12 @@ import com.dnd.model.PersonagemEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.dnd.model.toEntity
 
 
-class PersonagemService(private val distribuicaoPontosStrategy: DistribuicaoPontosStrategy, private val personagemDao: PersonagemDao) {
+
+
+class PersonagemService(private val distribuicaoPontosStrategy: DistribuicaoPontosStrategy, val personagemDao: PersonagemDao) {
 
     fun definirNome(personagem: Personagem, nome: String) {
         personagem.nome = nome
@@ -26,27 +29,39 @@ class PersonagemService(private val distribuicaoPontosStrategy: DistribuicaoPont
         return distribuicaoPontosStrategy.distribuir(personagem, pontos)
     }
 
-    fun salvarPersonagem(personagem: Personagem) {
-        val personagemEntity = PersonagemEntity(
-            id = personagem.id,
-            nome = personagem.nome,
-            raca = personagem.raca?.nome ?: "",
-            forca = personagem.forca,
-            destreza = personagem.destreza,
-            constituicao = personagem.constituicao,
-            inteligencia = personagem.inteligencia,
-            sabedoria = personagem.sabedoria,
-            carisma = personagem.carisma
-        )
-        try {
-            Log.d("Database", "Salvando personagem: ${personagemEntity.nome}")
-            personagemDao.insert(personagemEntity)
-            Log.d("Database", "Personagem salvo com sucesso: ${personagemEntity.nome}")
-        } catch (e: Exception) {
-            Log.e("Database", "Erro ao salvar personagem: ${e.message}")
-            e.printStackTrace()
+    fun getAllPersonagens(): List<PersonagemEntity> {
+        return personagemDao.getAll()
+    }
+
+    fun atualizarPersonagem(personagem: Personagem) {
+        val personagemEntity = personagem.toEntity()
+        CoroutineScope(Dispatchers.IO).launch {
+            personagemDao.update(personagemEntity)
         }
     }
+
+    fun deletePersonagemById(id: Long) {
+        CoroutineScope(Dispatchers.IO).launch {
+            personagemDao.deleteById(id)
+        }
+    }
+
+    fun salvarPersonagem(personagem: Personagem) {
+        val personagemEntity = personagem.toEntity()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            if (personagemEntity.id != 0L) {
+                // Atualiza o personagem se o ID não for zero
+                personagemDao.update(personagemEntity)
+                Log.d("Database", "Personagem atualizado com sucesso: ${personagemEntity.nome}")
+            } else {
+                // Insere um novo personagem se o ID for zero
+                personagemDao.insert(personagemEntity)
+                Log.d("Database", "Novo personagem salvo com sucesso: ${personagemEntity.nome}")
+            }
+        }
+    }
+
 
     suspend fun carregarPersonagem(id: Long): Personagem? {
         val personagemEntity = personagemDao.getPersonagemById(id)

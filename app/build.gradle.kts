@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt") // KAPT sem alias
+    id ("kotlin-parcelize")
+    id ("kotlin-android")
 }
 
 
@@ -114,6 +116,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0")
     implementation ("androidx.activity:activity-compose:1.5.0")
+
 }
 
 

@@ -26,6 +26,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.floor
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.dnd.model.PersonagemEntity
+import kotlinx.coroutines.CoroutineScope
 
 class MainActivity : ComponentActivity() {
     private lateinit var personagemService: PersonagemService
@@ -39,7 +43,7 @@ class MainActivity : ComponentActivity() {
         personagemService = PersonagemService(DistribuicaoManualStrategy(), personagemDao)
 
         // ID do personagem que queremos carregar
-        val personagemId = 1L
+        val personagemId = 0L
 
         // Carregar o personagem de forma assíncrona
         lifecycleScope.launch {
@@ -65,22 +69,26 @@ class MainActivity : ComponentActivity() {
     ) {
         NavHost(navController = navController, startDestination = "main_screen") {
             composable("main_screen") {
-                MainScreen(navController = navController, personagem, personagemService)
+                MainScreen(navController = navController, personagemService = personagemService, personagem = personagem)
             }
             composable("second_screen") {
-                SecondScreen(navController = navController, personagem, personagemService)
+                SecondScreen(navController = navController, personagemService = personagemService, personagem = personagem)
             }
             composable("character_sheet_screen") {
-                CharacterSheetScreen(navController = navController, personagem)
+                CharacterSheetScreen(navController = navController, personagemService = personagemService, personagem = personagem)
+            }
+            composable("lista_personagens_screen") {
+                ListaPersonagensScreen(navController = navController, personagemService = personagemService)
             }
         }
     }
 
+
     @Composable
     fun MainScreen(
         navController: NavHostController,
-        personagem: Personagem,
-        personagemService: PersonagemService
+        personagemService: PersonagemService,
+        personagem: Personagem
     ) {
         var nome by remember { mutableStateOf(personagem.nome ?: "") }
         var racaSelecionada by remember { mutableStateOf(personagem.raca) }
@@ -147,68 +155,83 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SecondScreen(
         navController: NavHostController,
-        personagem: Personagem,
-        personagemService: PersonagemService
+        personagemService: PersonagemService,
+        personagem: Personagem? = navController.previousBackStackEntry
+            ?.arguments
+            ?.getParcelable<Personagem>("personagem")
     ) {
         fun calculoModificador(valor: Int):  Int = floor((valor - 10) / 2.0).toInt()
 
-        var forca by remember { mutableStateOf(personagem.forca) }
-        var destreza by remember { mutableStateOf(personagem.destreza) }
-        var constituicao by remember { mutableStateOf(personagem.constituicao) }
-        var inteligencia by remember { mutableStateOf(personagem.inteligencia) }
-        var sabedoria by remember { mutableStateOf(personagem.sabedoria) }
-        var carisma by remember { mutableStateOf(personagem.carisma) }
+        personagem?.let {
+            var forca by remember { mutableStateOf(it.forca) }
+            var destreza by remember { mutableStateOf(it.destreza) }
+            var constituicao by remember { mutableStateOf(it.constituicao) }
+            var inteligencia by remember { mutableStateOf(it.inteligencia) }
+            var sabedoria by remember { mutableStateOf(it.sabedoria) }
+            var carisma by remember { mutableStateOf(it.carisma) }
 
-        val totalPontos = 27
-        val pontosUsados = personagemService.calcularCusto(
-            mapOf(
-                "forca" to forca,
-                "destreza" to destreza,
-                "constituicao" to constituicao,
-                "inteligencia" to inteligencia,
-                "sabedoria" to sabedoria,
-                "carisma" to carisma
+            val totalPontos = 27
+            val pontosUsados = personagemService.calcularCusto(
+                mapOf(
+                    "forca" to forca,
+                    "destreza" to destreza,
+                    "constituicao" to constituicao,
+                    "inteligencia" to inteligencia,
+                    "sabedoria" to sabedoria,
+                    "carisma" to carisma
+                )
             )
-        )
-        val pontosRestantes = totalPontos - pontosUsados
+            val pontosRestantes = totalPontos - pontosUsados
 
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            Text(text = "Pontos restantes: $pontosRestantes")
+            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                Text(text = "Pontos restantes: $pontosRestantes")
 
+                AtributoAdjustableField("Força", forca, { forca = it }, calculoModificador(forca))
+                AtributoAdjustableField("Destreza", destreza, { destreza = it }, calculoModificador(destreza))
+                AtributoAdjustableField("Constituição", constituicao, { constituicao = it }, calculoModificador(constituicao))
+                AtributoAdjustableField("Inteligência", inteligencia, { inteligencia = it }, calculoModificador(inteligencia))
+                AtributoAdjustableField("Sabedoria", sabedoria, { sabedoria = it }, calculoModificador(sabedoria))
+                AtributoAdjustableField("Carisma", carisma, { carisma = it }, calculoModificador(carisma))
 
-            AtributoAdjustableField("Força", forca, { forca = it }, calculoModificador(forca))
-            AtributoAdjustableField("Destreza", destreza, { destreza = it }, calculoModificador(destreza))
-            AtributoAdjustableField("Constituição", constituicao, { constituicao = it }, calculoModificador(constituicao))
-            AtributoAdjustableField("Inteligência", inteligencia, { inteligencia = it }, calculoModificador(inteligencia))
-            AtributoAdjustableField("Sabedoria", sabedoria, { sabedoria = it }, calculoModificador(sabedoria))
-            AtributoAdjustableField("Carisma", carisma, { carisma = it }, calculoModificador(carisma))
+                Button(
+                    onClick = {
+                        it.forca = forca
+                        it.destreza = destreza
+                        it.constituicao = constituicao
+                        it.inteligencia = inteligencia
+                        it.sabedoria = sabedoria
+                        it.carisma = carisma
 
-            Button(
-                onClick = {
-                    personagem.forca = forca
-                    personagem.destreza = destreza
-                    personagem.constituicao = constituicao
-                    personagem.inteligencia = inteligencia
-                    personagem.sabedoria = sabedoria
-                    personagem.carisma = carisma
+                        if (pontosRestantes >= 0) {
+                            it.aplicarBonusRacial()
 
-                    if (pontosRestantes >= 0) {
-                        personagem.aplicarBonusRacial()
-                        navController.navigate("character_sheet_screen")
-                    }
-                },
-                enabled = pontosRestantes >= 0
-            ) {
-                Text("Confirmar Distribuição")
+                            // Salva automaticamente o personagem após a redistribuição
+                            personagemService.salvarPersonagem(it)
+
+                            // Atualiza automaticamente o personagem após a redistribuição
+                            //personagemService.atualizarPersonagem(it)
+
+                            navController.navigate("character_sheet_screen")
+                        }
+                    },
+                    enabled = pontosRestantes >= 0
+                ) {
+                    Text("Confirmar Distribuição")
+                }
             }
+        } ?: run {
+            Text("Erro: Personagem não encontrado.")
         }
     }
 
     @Composable
     fun CharacterSheetScreen(
         navController: NavHostController,
+        personagemService: PersonagemService,
         personagem: Personagem
     ) {
+        var personagens by remember { mutableStateOf<List<PersonagemEntity>>(emptyList()) }
+
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -225,8 +248,14 @@ class MainActivity : ComponentActivity() {
             Text("Carisma: ${adjustedValue(personagem.carisma, personagem.modificadorCarisma())}")
             Text("Pontos de Vida: ${personagem.pontosDeVida}")
 
-            Button(onClick = { navController.navigate("main_screen") }) {
-                Text("Voltar")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(onClick = {
+                navController.navigate("lista_personagens_screen")
+            }) {
+                Text("Visualizar os personagens")
             }
         }
     }
@@ -265,6 +294,69 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    @Composable
+    fun ListaPersonagensScreen(
+        navController: NavHostController,
+        personagemService: PersonagemService
+    ) {
+        var personagens by remember { mutableStateOf<List<PersonagemEntity>>(emptyList()) }
+
+        LaunchedEffect(Unit) {
+            personagens = withContext(Dispatchers.IO) {
+                personagemService.getAllPersonagens()
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Text("Lista de Personagens Criados", style = MaterialTheme.typography.headlineMedium)
+
+            if (personagens.isNotEmpty()) {
+                personagens.forEach { personagemEntity ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("ID: ${personagemEntity.id} - Nome: ${personagemEntity.nome}")
+
+                        val personagem = personagemEntity.toPersonagem()
+
+                        Row {
+                            Button(onClick = {
+                                val personagem = personagemEntity.toPersonagem()
+                                navController.currentBackStackEntry?.arguments?.putParcelable("personagem", personagem)
+                                navController.navigate("second_screen")
+                            }) {
+                                Text("Atualizar")
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Button(onClick = {
+                                // Usar CoroutineScope para operações de I/O
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    personagemService.deletePersonagemById(personagemEntity.id)
+                                    personagens = personagens.filter { it.id != personagemEntity.id }
+                                }
+                            }) {
+                                Text("Deletar")
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text("Nenhum personagem criado.")
+            }
+
+            Button(onClick = { navController.navigate("main_screen") }) {
+                Text("Voltar")
+            }
+        }
+    }
+
+
 
     @Composable
     fun AtributoAdjustableField(label: String, valor: Int, onValorChange: (Int) -> Unit, modificador: Int) {
